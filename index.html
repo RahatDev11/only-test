@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Any's Beauty Corner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #e53e3e;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes pulse {
+            50% {
+                opacity: .5;
+            }
+        }
+        .skeleton-card {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="header"></div>
+
+    <!-- মোবাইল সার্চ বার -->
+    <div class="md:hidden p-2 w-full fixed top-20 left-0 z-40 hidden bg-transparent" id="mobileSearchBar">
+        <div class="relative">
+            <input type="text" id="searchInput" 
+                   class="w-full p-2 pl-10 pr-10 border-0 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-lipstick bg-white/50 backdrop-blur-sm placeholder:text-gray-400/80" 
+                   placeholder="প্রোডাক্ট সার্চ করুন..." 
+                   oninput="searchProducts()">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400/80"></i>
+            <i class="fas fa-times absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400/80 cursor-pointer" onclick="closeMobileSearch()"></i>
+        </div>
+        <!-- সার্চ রেজাল্ট -->
+        <div id="searchResults" class="mt-2 max-h-60 overflow-y-auto absolute bg-white/50 backdrop-blur-sm w-full shadow-lg rounded-lg z-50"></div>
+    </div>
+
+    <!-- মূল কন্টেন্ট -->
+    <main class="p-4 pt-20">
+        <!-- হোম সেকশন -->
+        <section id="home" class="bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-lg text-center p-6 mb-6">
+            <div class="glass-effect">
+                <h1 class="text-2xl font-bold mb-4 text-lipstick">Welcome to Any's Beauty Corner</h1>
+                <p class="mb-4">আমরা বিভিন্ন ধরনের জামা, প্যান্ট, পাঞ্জাবি ইত্যাদি সরবরাহ করি।</p>
+                <button class="bg-lipstick text-white px-4 py-2 rounded hover:bg-lipstick-dark" onclick="scrollToProducts()">পণ্য দেখুন</button>
+            </div>
+        </section>
+
+        <!-- পণ্য সমূহ -->
+        <section id="products" class="mb-6">
+            <h2 class="text-xl font-bold text-center mb-4 text-lipstick">পণ্য সমূহ</h2>
+            <div id="productList" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- লোডিং স্পিনার এখানে দেখাবে -->
+            </div>
+        </section>
+
+        <!-- আমাদের সম্পর্কে -->
+        <section id="about" class="mb-6">
+            <h2 class="text-xl font-bold text-center mb-4 text-lipstick">আমাদের সম্পর্কে</h2>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <p class="text-gray-700 mb-4">Any's Beauty Corner হলো একটি অনলাইন প্ল্যাটফর্ম যেখানে আপনি পাবেন উচ্চমানের প্রোডাক্ট এবং সেরা সেবা। আমরা আমাদের গ্রাহকদের সন্তুষ্টি নিশ্চিত করতে সর্বদা সচেষ্ট।</p>
+                <p class="text-gray-700 mb-4">আমাদের লক্ষ্য হলো সবার জন্য সুন্দর এবং মানসম্মত প্রোডাক্ট সহজলভ্য করা।</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h3 class="text-lg font-bold text-lipstick mb-2">আমাদের মিশন</h3>
+                        <p class="text-gray-700">সবার জন্য স্টাইলিশ এবং মানসম্মত প্রোডাক্ট সরবরাহ করা।</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h3 class="text-lg font-bold text-lipstick mb-2">আমাদের ভিশন</h3>
+                        <p class="text-gray-700">বাংলাদেশের সেরা অনলাইন শপ হিসেবে প্রতিষ্ঠিত হওয়া।</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- এডমিন সেকশন -->
+        <section id="product-update" class="hidden">
+            <h2 class="text-xl font-bold text-center mb-4 text-lipstick">প্রোডাক্ট আপডেট</h2>
+            <form id="productForm" class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="mb-4">
+                    <label for="productName" class="block text-gray-700">পণ্যের নাম</label>
+                    <input type="text" id="productName" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="productPrice" class="block text-gray-700">দাম</label>
+                    <input type="number" id="productPrice" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="productCategory" class="block text-gray-700">ক্যাটাগরি</label>
+                    <select id="productCategory" class="w-full p-2 border rounded">
+                        <option value="health">স্বাস্থ্য</option>
+                        <option value="cosmetics">মেকআপ</option>
+                        <option value="skincare">স্কিনকেয়ার</option>
+                        <option value="haircare">হেয়ারকেয়ার</option>
+                        <option value="mehandi">মেহেদী</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="productImages" class="block text-gray-700">ছবি URL (কমা দিয়ে আলাদা করুন)</label>
+                    <div id="imageInputs">
+                        <input type="text" class="w-full p-2 border rounded mb-2" placeholder="ছবির লিংক">
+                    </div>
+                    <button type="button" onclick="addImageField()" class="bg-lipstick text-white px-3 py-1 rounded mt-2 hover:bg-lipstick-dark">
+                        <i class="fas fa-plus"></i> আরেকটি ছবি যোগ করুন
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <label for="productTags" class="block text-gray-700">ট্যাগ (কমা দিয়ে আলাদা করুন)</label>
+                    <input type="text" id="productTags" class="w-full p-2 border rounded">
+                </div>
+                <div class="mb-4">
+                    <label for="productDescription" class="block text-gray-700">বিবরণ</label>
+                    <textarea id="productDescription" class="w-full p-2 border rounded" rows="4" required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="productStockStatus" class="block text-gray-700">স্টক স্ট্যাটাস</label>
+                    <select id="productStockStatus" class="w-full p-2 border rounded">
+                        <option value="in_stock">স্টকে আছে</option>
+                        <option value="out_of_stock">স্টকে নেই</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="productQuantity" class="block text-gray-700">পরিমাণ</label>
+                    <select id="productQuantity" class="w-full p-2 border rounded"></select>
+                </div>
+                <button type="submit" class="bg-lipstick text-white px-4 py-2 rounded hover:bg-lipstick-dark">পোস্ট করুন</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- সোশ্যাল মিডিয়া ফ্লোটিং বাটন -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <!-- শেয়ার বাটন -->
+        <button id="shareButton" class="bg-lipstick text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center">
+            <i class="fas fa-user-circle"></i>
+        </button>
+        <!-- সোশ্যাল মিডিয়া আইকনগুলি (লুকানো অবস্থায়) -->
+        <div id="socialIcons" class="hidden space-y-2 mt-2">
+            <a href="https://www.facebook.com/share/1PyLUzGE9P/" target="_blank" rel="noopener noreferrer" class="bg-lipstick text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class="fab fa-facebook"></i>
+            </a>
+            <a href="https://www.instagram.com/anysbeautycorner/?utm_medium=copy_link" target="_blank" rel="noopener noreferrer" class="bg-lipstick text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://www.tiktok.com/@anysbeautycorner" target="_blank" rel="noopener noreferrer" class="bg-lipstick text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class="fab fa-tiktok"></i>
+            </a>
+            <a href="https://youtube.com/@anysbeautycorner?si=oXGtEuakP_SIPH_Q" target="_blank" rel="noopener noreferrer" class="bg-lipstick text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <i class="fab fa-youtube"></i>
+            </a>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <!-- লগইন মোডাল -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm">
+        <div class="login-modal-content bg-white/20 backdrop-blur-lg rounded-lg p-6 max-w-md mx-auto mt-20 shadow-lg border border-white/20">
+            <span class="close text-gray-600 hover:text-gray-900 cursor-pointer text-2xl absolute top-4 right-4" onclick="closeModal('loginModal')">×</span>
+            <h2 class="text-xl font-bold mb-4 text-lipstick">লগইন</h2>
+            <div class="text-center">
+                <button onclick="loginWithGmail()" class="bg-lipstick text-white px-4 py-2 rounded w-full hover:bg-lipstick-dark transition-colors">
+                    Gmail দিয়ে লগইন করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    
+
+    
+
+    <!-- কার্ট সাইডবার -->
+    <div id="cartSidebar" class="cart-sidebar fixed top-0 right-0 w-80 h-full bg-white shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col hidden">
+        <div class="cart-header p-4 flex justify-between items-center border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">আপনার কার্ট</h2>
+            <button class="close-btn text-gray-600 hover:text-gray-900 text-2xl" onclick="closeCartSidebar()">×</button>
+        </div>
+        <div id="cartItems" class="cart-items flex-1 overflow-y-auto p-4">
+            <!-- কার্ট আইটেম এখানে লোড হবে -->
+        </div>
+        <div class="cart-footer p-4 border-t border-gray-200 text-center">
+            <p id="totalPrice" class="text-lg font-bold text-gray-800 mb-4">মোট মূল্য: 0 টাকা</p>
+            <button class="checkout-btn bg-lipstick text-white px-4 py-2 rounded w-full hover:bg-lipstick-dark transition-colors" onclick="checkout()">চেকআউট করুন</button>
+        </div>
+    </div>
+
+    <!-- কার্ট ওভারলে -->
+    <div id="cartOverlay" class="cart-overlay fixed inset-0 bg-black/50 hidden z-40" onclick="closeCartSidebar()"></div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>

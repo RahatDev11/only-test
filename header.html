@@ -1,0 +1,150 @@
+<!-- হেডার -->
+<header class="bg-brushstroke text-white p-4 flex justify-between items-center fixed top-0 left-0 w-full z-50">
+    <!-- লোগো -->
+    <a class="flex items-center" href="index.html">
+        <div class="flex items-center">
+            <img alt="Any's Beauty Corner লোগো" class="h-10 w-10 rounded-full mr-2 border-2 border-lipstick" height="40" src="img.jpg" width="40" onerror="this.src='https://via.placeholder.com/40'; this.alt='লোগো লোড হয়নি';">
+            <span class="text-lg font-bold">Any's Beauty Corner</span>
+        </div>
+    </a>
+
+    <!-- ডানপাশের আইকনগুলো -->
+    <div class="flex items-center space-x-4">
+        <!-- ডেস্কটপ সার্চ বার -->
+        <div class="hidden md:block p-2 w-80 relative">
+            <div class="relative">
+                <input class="w-full p-2 pl-10 border-0 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-lipstick bg-white/50 backdrop-blur-sm placeholder:text-gray-400/80" id="searchInputDesktop" oninput="searchProductsDesktop()" placeholder="প্রোডাক্ট সার্চ করুন..." type="text" />
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400/80"></i>
+            </div>
+            <!-- সার্চ রেজাল্ট -->
+            <div class="mt-2 max-h-60 overflow-y-auto absolute bg-white/90 backdrop-blur-sm w-full shadow-lg rounded-lg z-50" id="searchResultsDesktop"></div>
+        </div>
+
+        <!-- মোবাইল সার্চ আইকন -->
+        <div class="md:hidden cursor-pointer" onclick="focusMobileSearch()">
+            <i class="fas fa-search text-white text-xl"></i>
+        </div>
+
+        <!-- শপিং ব্যাগ আইকন -->
+        <button id="cartButton" class="bg-lipstick text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center relative" onclick="openCartSidebar()">
+            <i class="fas fa-shopping-bag"></i>
+            <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </button>
+
+        <!-- মোবাইল মেনু বাটন -->
+        <button class="bg-white text-lipstick px-4 py-2 rounded md:hidden" onclick="openSidebar()">☰</button>
+    </div>
+
+    <!-- কার্ট সাইডবার -->
+    <div id="cartSidebar" class="fixed top-0 right-0 h-full w-80 bg-white shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out z-50">
+        <div class="p-4 h-full flex flex-col">
+            <!-- কার্ট বন্ধ করার বাটন -->
+            <button onclick="closeCartSidebar()" class="text-gray-600 hover:text-gray-900">
+                <i class="fas fa-times"></i>
+            </button>
+            <!-- কার্ট হেডিং -->
+            <h2 class="text-xl text-black font-bold mb-4">কার্ট</h2>
+            <!-- কার্ট আইটেমগুলি -->
+            <div id="cartItems" class="space-y-4 flex-1 overflow-y-auto"></div>
+            <!-- চেকআউট বাটন -->
+            <div class="cart-footer mt-4">
+                <p id="totalPrice" class="text-lg font-bold">মোট মূল্য: 0 টাকা</p>
+                <button onclick="checkout()" class="bg-lipstick text-white px-4 py-2 rounded w-full mt-2 hover:bg-lipstick-dark">চেকআউট</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- কার্ট ওভারলে -->
+    <div id="cartOverlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeCartSidebar()"></div>
+
+    <!-- টোস্ট নোটিফিকেশন -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden z-50"></div>
+
+    <!-- মোবাইল সাইডবার ওভারলে -->
+    <div class="fixed inset-0 z-40 hidden" id="sidebarOverlay">
+        <!-- Sidebar Content -->
+        <div class="fixed top-0 left-0 h-full w-80 bg-white/95 backdrop-blur-lg shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out p-4 flex flex-col" id="sidebar">
+            
+            <!-- Close button at top -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-gray-800">মেনু</h2>
+                <button class="text-gray-600 hover:text-red-500 text-xl" onclick="closeSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Accordion Menu -->
+            <div class="flex-grow overflow-y-auto">
+                <!-- Accordion Item 1: Category -->
+                <div class="border-b border-gray-200/80">
+                    <button class="flex items-center justify-between w-full text-left text-gray-800 p-3 hover:bg-gray-200/60" onclick="toggleSidebarSection('category-list')">
+                        <span class="font-semibold">ক্যাটাগরি</span>
+                        <i class="fas fa-chevron-down ml-2 transition-transform duration-300"></i>
+                    </button>
+                    <div class="hidden pl-4 py-2 space-y-1 bg-gray-100/50" id="category-list">
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#all" onclick="handleCategoryClick('all', event)">সকল প্রোডাক্ট</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#health" onclick="handleCategoryClick('health', event)">স্বাস্থ্য</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#cosmetics" onclick="handleCategoryClick('cosmetics', event)">মেকআপ</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#skincare" onclick="handleCategoryClick('skincare', event)">স্কিনকেয়ার</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#haircare" onclick="handleCategoryClick('haircare', event)">হেয়ারকেয়ার</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#mehandi" onclick="handleCategoryClick('mehandi', event)">মেহেদী</a>
+                    </div>
+                </div>
+
+                <!-- Accordion Item 2: Menu -->
+                <div class="border-b border-gray-200/80">
+                    <button class="flex items-center justify-between w-full text-left text-gray-800 p-3 hover:bg-gray-200/60" onclick="toggleSidebarSection('menu-list')">
+                        <span class="font-semibold">মেনু</span>
+                        <i class="fas fa-chevron-down ml-2 transition-transform duration-300"></i>
+                    </button>
+                    <div class="hidden pl-4 py-2 space-y-1 bg-gray-100/50" id="menu-list">
+                        <div id="mobileLoginButton">
+                             <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#" onclick="openLoginModal()">
+                                <i class="fas fa-sign-in-alt mr-2"></i>
+                                <span>লগইন</span>
+                            </a>
+                        </div>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="index.html#home" onclick="handleCategoryClick('all', event)">হোম</a>
+                <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="index.html#about" onclick="event.stopPropagation();">আমাদের সম্পর্কে</a>
+                <a id="mobileOrderTrackButton" class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="order-track.html" onclick="event.stopPropagation();">অর্ডার ট্র্যাক</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Blank area to click to close -->
+        <div class="fixed top-0 right-0 h-full w-[calc(100%-20rem)]" id="blankArea" onclick="closeSidebar()"></div>
+    </div>
+
+    <!-- ডেস্কটপ মেনু -->
+    <nav class="hidden md:flex space-x-4 items-center mr-20">
+        <div id="desktopLoginButton">
+            <button class="flex items-center" onclick="openLoginModal()">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                <span>লগইন</span>
+            </button>
+        </div>
+        <a class="text-gray-800 hover:text-highlight" href="index.html#home">হোম</a>
+        <a class="text-gray-800 hover:text-highlight" href="index.html#about">আমাদের সম্পর্কে</a>
+        <div class="relative">
+            <button class="text-gray-800 hover:text-highlight" onclick="toggleSubMenuDesktop()">
+                পণ্য সমূহ
+                <i class="fas fa-chevron-down ml-2 transition-transform duration-300" id="desktopArrowIcon"></i>
+            </button>
+        </div>
+        <a id="desktopOrderTrackButton" class="text-gray-800 hover:text-highlight" href="order-track.html" onclick="handleOrderTrackClick(event)">অর্ডার ট্র্যাক</a>
+    </nav>
+
+    <!-- ডেস্কটপ টপ বার (সাবমেনু) -->
+    <div class="hidden absolute top-full left-0 w-full bg-white shadow-lg z-40" id="desktopSubMenuBar">
+        <div class="container mx-auto p-4">
+            <div class="grid grid-cols-4 gap-4">
+                <a class="block p-2 text-gray-800 hover:bg-gray-100" href="#all" onclick="handleCategoryClick('all', event)">সকল প্রোডাক্ট</a>
+                <a class="block p-2 text-gray-800 hover:bg-gray-100" href="#health" onclick="handleCategoryClick('health', event)">স্বাস্থ্য</a>
+                <a class="block p-2 text-gray-800 hover:bg-gray-100" href="#cosmetics" onclick="handleCategoryClick('cosmetics', event)">মেকআপ</a>
+                <a class="block p-2 text-gray-800 hover:bg-gray-100" href="#skincare" onclick="handleCategoryClick('skincare', event)">স্কিনকেয়ার</a>
+                <a class="block p-2 text-gray-800 hover:bg-gray-100" href="#haircare" onclick="handleCategoryClick('haircare', event)">হেয়ারকেয়ার</a>
+                <a class="block p-2 text-gray-800 hover:bg-gray-100" href="#mehandi" onclick="handleCategoryClick('mehandi', event)">মেহেদী</a>
+            </div>
+        </div>
+    </div>
+</header>
