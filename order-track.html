@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 </head>
 <body class="bg-background">
-    <div id="header"></div>
+    <div id="header-placeholder"></div>
 
     <!-- Mobile Search Bar -->
     <div class="md:hidden p-2 w-full fixed top-20 left-0 z-40 hidden bg-transparent" id="mobileSearchBar">
@@ -40,21 +40,52 @@
                 <button onclick="openLoginModal()" class="mt-4 bg-lipstick text-white px-4 py-2 rounded hover:bg-lipstick-dark">লগইন করুন</button>
             </div>
 
-            <div id="orderTrackForm" class="hidden">
-                <!-- Order ID input and track button removed as orders will be loaded from local storage -->
+            <!-- Phone Number Search Section -->
+            <div class="mb-6">
+                <label for="phoneNumberSearch" class="block text-gray-700 text-sm font-bold mb-2">ফোন নম্বর দিয়ে অর্ডার খুঁজুন:</label>
+                <div class="flex space-x-2">
+                    <input type="tel" id="phoneNumberSearch" name="phoneNumberSearch" placeholder="১১ ডিজিটের ফোন নম্বর দিন" pattern="01[3-9][0-9]{8}" title="অনুগ্রহ করে একটি বৈধ ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন।" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-lipstick">
+                    <button id="searchByPhoneBtn" class="bg-lipstick text-white px-4 py-2 rounded hover:bg-lipstick-dark transition-colors duration-300">
+                        <i class="fas fa-search mr-2"></i>খুঁজুন
+                    </button>
+                </div>
             </div>
 
             <div id="orderTrackResult" class="mt-6 hidden">
-                <!-- Order details will be displayed here -->
+                <!-- Order summaries will be displayed here -->
             </div>
 
             <div id="noOrderFoundMessage" class="text-center p-6 text-gray-600 hidden">
-                <p>এই আইডি দিয়ে কোনো অর্ডার পাওয়া যায়নি।</p>
+                <p>কোনো অর্ডার পাওয়া যায়নি।</p>
             </div>
         </div>
     </main>
 
-    <div id="footer"></div>
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
+            <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+            <h3 class="text-2xl font-bold text-lipstick mb-4">অর্ডারের বিস্তারিত</h3>
+            <div id="modalContent" class="max-h-96 overflow-y-auto">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
+            <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+            <h3 class="text-2xl font-bold text-lipstick mb-4">অর্ডারের বিস্তারিত</h3>
+            <div id="modalContent" class="max-h-96 overflow-y-auto">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
 
     <script src="script.js" type="module"></script>
 </body>

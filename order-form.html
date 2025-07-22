@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 </head>
 <body class="bg-background">
-    <div id="header"></div>
+    <div id="header-placeholder"></div>
 
     <!-- Mobile Search Bar -->
     <div class="md:hidden p-2 w-full fixed top-20 left-0 z-40 hidden bg-transparent" id="mobileSearchBar">
@@ -154,113 +154,6 @@
                 <div class="checkout-items mb-6 max-h-60 overflow-y-auto no-scrollbar border rounded-md p-2 bg-gray-50/50" id="checkoutItems">
                 </div>
 
-                <div class="form-group mb-4">
-                    <label for="customerName" class="block text-gray-700 text-sm font-bold mb-2">নাম<span class="required-star text-red-500">*</span></label>
-                    <input type="text" id="customerName" name="customerName" placeholder="আপনার নাম লিখুন" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-lipstick">
-                </div>
-
-                <div class="form-group mb-4">
-                    <label for="phoneNumber" class="block text-gray-700 text-sm font-bold mb-2">ফোন নম্বর<span class="required-star text-red-500">*</span></label>
-                    <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="১১ ডিজিটের ফোন নম্বর দিন" pattern="01[3-9][0-9]{8}" title="অনুগ্রহ করে একটি বৈধ ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন।" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-lipstick">
-                </div>
-
-                <div class="form-group mb-4">
-                    <label for="address" class="block text-gray-700 text-sm font-bold mb-2">পূর্ণ ঠিকানা<span class="required-star text-red-500">*</span></label>
-                    <textarea id="address" name="address" placeholder="বাসা/হোল্ডিং নং, রোড নং, এলাকা, থানা, জেলা" rows="3" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-lipstick"></textarea>
-                </div>
-
-                <div class="form-group mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">ডেলিভারি এলাকা<span class="required-star text-red-500">*</span></label>
-                    <div class="radio-group flex flex-col space-y-2">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="deliveryLocation" value="insideDhaka" required checked class="form-radio text-lipstick focus:ring-lipstick">
-                            <span class="ml-2 text-gray-700">ঢাকার ভেতরে (ডেলিভারি চার্জ ৭০৳)</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="deliveryLocation" value="outsideDhaka" class="form-radio text-lipstick focus:ring-lipstick">
-                            <span class="ml-2 text-gray-700">ঢাকার বাইরে (ডেলিভারি চার্জ ১৬০৳)</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div id="outsideDhakaLocationGroup" class="form-group hidden">
-                    <label for="outsideDhakaLocation" class="block text-gray-700 text-sm font-bold mb-2">ঢাকার বাইরে জেলা<span class="required-star text-red-500">*</span></label>
-                    <select id="outsideDhakaLocation" name="outsideDhakaLocation" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-lipstick">
-                        <option value="" disabled selected>--- জেলা নির্বাচন করুন ---</option>
-                        <option value="Bagerhat">বাগেরহাট</option>
-                        <option value="Bandarban">বান্দরবান</option>
-                        <option value="Barguna">বরগুনা</option>
-                        <option value="Barisal">বরিশাল</option>
-                        <option value="Bhola">ভোলা</option>
-                        <option value="Bogra">বগুড়া</option>
-                        <option value="Brahmanbaria">ব্রাহ্মণবাড়িয়া</option>
-                        <option value="Chandpur">চাঁদপুর</option>
-                        <option value="Chapainawabganj">চাঁপাইনবাবগঞ্জ</option>
-                        <option value="Chattogram">চট্টগ্রাম</option>
-                        <option value="Chuadanga">চুয়াডাঙ্গা</option>
-                        <option value="Comilla">কুমিল্লা</option>
-                        <option value="Cox's Bazar">কক্সবাজার</option>
-                        <option value="Dhaka City">ঢাকা শহর</option>
-                        <option value="Dhaka District(Outside City)">ঢাকা জেলা (শহরের বাইরে)</option>
-                        <option value="Dinajpur">দিনাজপুর</option>
-                        <option value="Faridpur">ফরিদপুর</option>
-                        <option value="Feni">ফেনী</option>
-                        <option value="Gaibandha">গাইবান্ধা</option>
-                        <option value="Gazipur">গাজীপুর</option>
-                        <option value="Gopalganj">গোপালগঞ্জ</option>
-                        <option value="Habiganj">হবিগঞ্জ</option>
-                        <option value="Jamalpur">জামালপুর</option>
-                        <option value="Jashore">যশোর</option>
-                        <option value="Jhalokati">ঝালকাঠি</option>
-                        <option value="Jhenaidah">ঝিনাইদহ</option>
-                        <option value="Joypurhat">জয়পুরহাট</option>
-                        <option value="Khagrachari">খাগড়াছড়ি</option>
-                        <option value="Khulna">খুলনা</option>
-                        <option value="Kishoreganj">কিশোরগঞ্জ</option>
-                        <option value="Kurigram">কুড়িগ্রাম</option>
-                        <option value="Kushtia">কুষ্টিয়া</option>
-                        <option value="Lakshmipur">লক্ষ্মীপুর</option>
-                        <option value="Lalmonirhat">লালমনিরহাট</option>
-                        <option value="Madaripur">মাদারীপুর</option>
-                        <option value="Magura">মাগুরা</option>
-                        <option value="Manikganj">মানিকগঞ্জ</option>
-                        <option value="Meherpur">মেহেরপুর</option>
-                        <option value="Moulvibazar">মৌলভীবাজার</option>
-                        <option value="Munshiganj">মুন্সিগঞ্জ</option>
-                        <option value="Mymensingh">ময়মনসিংহ</option>
-                        <option value="Naogaon">নওগাঁ</option>
-                        <option value="Narail">নড়াইল</option>
-                        <option value="Narayanganj">নারায়ণগঞ্জ</option>
-                        <option value="Narsingdi">নরসিংদী</option>
-                        <option value="Natore">নাটোর</option>
-                        <option value="Netrokona">নেত্রকোনা</option>
-                        <option value="Nilphamari">নীলফামারী</option>
-                        <option value="Noakhali">নোয়াখালী</option>
-                        <option value="Pabna">পাবনা</option>
-                        <option value="Panchagarh">পঞ্চগড়</option>
-                        <option value="Patuakhali">পটুয়াখালী</option>
-                        <option value="Pirojpur">পিরোজপুর</option>
-                        <option value="Rajbari">রাজবাড়ী</option>
-                        <option value="Rajshahi">রাজশাহী</option>
-                        <option value="Rangamati">রাঙ্গামাটি</option>
-                        <option value="Rangpur">রংপুর</option>
-                        <option value="Satkhira">সাতক্ষীরা</option>
-                        <option value="Shariatpur">শরীয়তপুর</option>
-                        <option value="Sherpur">শেরপুর</option>
-                        <option value="Sirajganj">সিরাজগঞ্জ</option>
-                        <option value="Sunamganj">সুনামগঞ্জ</option>
-                        <option value="Sylhet">সিলেট</option>
-                        <option value="Tangail">টাঙ্গাইল</option>
-                        <option value="Thakurgaon">ঠাকুরগাঁও</option>
-                        <!-- Add more districts as needed -->
-                    </select>
-                </div>
-
-                <div class="form-group mb-4">
-                    <label for="deliveryNote" class="block text-gray-700 text-sm font-bold mb-2">ডেলিভারি নোট (ঐচ্ছিক)</label>
-                    <textarea id="deliveryNote" name="deliveryNote" placeholder="ডেলিভারিম্যান এর জন্য কোনো বিশেষ নির্দেশনা থাকলে লিখুন" rows="2" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-lipstick"></textarea>
-                </div>
-
                 <h3 class="text-lg font-semibold mb-3 text-gray-700">মূল্য বিবরণী</h3>
                 <div class="price-summary mb-6 p-4 bg-gray-50/50 rounded-lg border border-gray-200">
                      <p class="flex justify-between items-center text-gray-700 mb-2"><span>সাব-টোটাল:</span> <span id="subTotalDisplay" class="font-semibold">০.০০ টাকা</span></p>
@@ -306,14 +199,14 @@
                     <i class="fas fa-check-circle mr-2"></i> অর্ডার কনফার্ম করুন
                 </button>
 
-                <a href="order-track.html" class="order-list-link mt-4 inline-flex items-center justify-center bg-white hover:bg-gray-100 text-lipstick font-bold py-3 px-4 rounded shadow transition-colors duration-300">
+                <a href="order-track.html" id="orderListLink" class="order-list-link mt-4 inline-flex items-center justify-center bg-white hover:bg-gray-100 text-lipstick font-bold py-3 px-4 rounded shadow transition-colors duration-300 hidden">
                    <i class="fas fa-list-alt mr-1"></i> আপনার সকল অর্ডার দেখুন
                 </a>
             </form>
         </div>
     </main>
 
-    <div id="footer"></div>
+    <div id="footer-placeholder"></div>
 
     <script src="script.js" type="module"></script>
 </body>

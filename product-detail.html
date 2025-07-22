@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 </head>
 <body class="bg-gray-100 bg-background">
-    <div id="header"></div>
+    <div id="header-placeholder"></div>
 
     <!-- মোবাইল সার্চ বার -->
     <div class="md:hidden p-2 w-full fixed top-20 left-0 z-40 hidden bg-transparent" id="mobileSearchBar">
@@ -27,36 +27,50 @@
     </div>
 
     <main class="p-4 pt-24 md:pt-28">
-        <div class="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
-            <!-- ইমেজ গ্যালারি সেকশন -->
-            <div class="image-gallery">
-                <div class="main-image-container">
-                    <img id="mainImage" src="https://via.placeholder.com/500x400.png?text=Loading..." alt="Main Product Image">
+        <div class="max-w-full md:max-w-6xl lg:max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-4 md:p-6 flex flex-col md:flex-row gap-6">
+            <!-- Left Column: Image Gallery -->
+            <div class="md:w-1/2 flex flex-col items-center order-1 md:order-1">
+                <div class="image-gallery w-full">
+                    <div class="main-image-container">
+                        <img id="mainImage" src="https://via.placeholder.com/500x400.png?text=Loading..." alt="Main Product Image">
+                    </div>
+                    <div class="thumbnail-container mt-4" id="thumbnailContainer"></div>
                 </div>
-                <div class="thumbnail-container" id="thumbnailContainer"></div>
             </div>
-            <h1 id="productTitle" class="text-2xl lg:text-3xl font-bold mb-4 text-gray-800">লোড হচ্ছে...</h1>
-            <p id="productPrice" class="text-lipstick text-xl lg:text-2xl font-bold mb-4">লোড হচ্ছে...</p>
-            
-            <p id="productDescription" class="text-gray-700 mb-6 leading-relaxed">লোড হচ্ছে...</p>
-            
-            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                <button id="buyNowBtn" onclick="buyNow()" class="w-full sm:w-auto bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 ease-in-out flex items-center justify-center font-semibold opacity-50 cursor-not-allowed" disabled>
-                    <i class="fas fa-credit-card mr-2"></i>এখনই কিনুন
-                </button>
-                <button id="addToCartBtn" onclick="addToCartFromDetail()" class="w-full sm:w-auto bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-colors duration-200 ease-in-out flex items-center justify-center font-semibold">
-                    <i class="fas fa-cart-plus mr-2"></i>কার্টে যোগ করুন
-                </button>
-                 <a id="whatsappBtn" target="_blank" class="w-full sm:w-auto bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors duration-200 ease-in-out inline-flex items-center justify-center font-semibold">
-                    <i class="fab fa-whatsapp mr-2"></i>WhatsApp এ অর্ডার
-                </a>
+
+            <!-- Right Column: Product Details -->
+            <div class="md:w-1/2 flex flex-col order-2 md:order-2">
+                <h1 id="productTitle" class="text-2xl lg:text-3xl font-bold mb-2 text-gray-800">লোড হচ্ছে...</h1>
+                <p id="productPrice" class="text-lipstick text-xl lg:text-2xl font-bold mb-4">লোড হচ্ছে...</p>
+                
+                <div class="quantity-selector-container mb-6">
+                    <label for="quantityInput" class="font-semibold text-gray-800 mr-3">পরিমাণ:</label>
+                    <div class="quantity-input-wrapper">
+                        <button id="decreaseQuantityBtn" class="quantity-btn">-</button>
+                        <input type="number" id="quantityInput" value="1" min="1" class="quantity-input">
+                        <button id="increaseQuantityBtn" class="quantity-btn">+</button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:gap-2 sm:flex-wrap sm:justify-center">
+                    <button id="buyNowBtn" onclick="buyNow()" class="w-full sm:w-auto bg-blue-500 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 ease-in-out flex items-center justify-center font-semibold opacity-50 cursor-not-allowed whitespace-nowrap text-sm">
+                        <i class="fas fa-credit-card mr-1"></i>এখনই কিনুন
+                    </button>
+                    <button id="addToCartBtn" onclick="addToCartFromDetail()" class="w-full sm:w-auto bg-teal-500 text-white px-2 py-2 rounded-lg hover:bg-teal-600 transition-colors duration-200 ease-in-out flex items-center justify-center font-semibold whitespace-nowrap text-sm">
+                        <i class="fas fa-cart-plus mr-1"></i>কার্টে যোগ করুন
+                    </button>
+                    <a id="whatsappBtn" target="_blank" class="w-full sm:w-auto bg-green-500 text-white px-2 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 ease-in-out inline-flex items-center justify-center font-semibold whitespace-nowrap text-sm">
+                        <i class="fab fa-whatsapp mr-1"></i>WhatsApp এ অর্ডার
+                    </a>
+                </div>
+                <p id="productDescription" class="text-gray-700 mb-6 leading-relaxed mt-6">লোড হচ্ছে...</p>
             </div>
         </div>
     </main>
-    <div id="footer"></div>
+    <div id="footer-placeholder"></div>
 
     <!-- টোস্ট নোটিফিকেশন এলিমেন্ট -->
-    <div id="toast"></div>
+    <div id="toast" class="hidden"></div>
 
     <!-- ফুল-স্ক্রিন মোডাল -->
     <div id="imageModal">

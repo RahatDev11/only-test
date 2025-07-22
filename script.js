@@ -1,7 +1,7 @@
 console.log("script.js loaded.");
 // Firebase মডিউল ইম্পোর্ট করুন
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, get, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, set, get, push, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // Firebase কনফিগারেশন
@@ -113,10 +113,20 @@ window.logout = function() {
 // এডমিন চেক করার এবং প্রোডাক্ট আপলোড ফর্ম দেখানোর ফাংশন
 window.checkAdminAndShowUploadForm = function(user) {
     const adminEmail = "mdnahidislam6714@gmail.com";
-    isAdmin = user && user.email === adminEmail;
+    isAdmin = user && (user.email === adminEmail || user.role === 'admin' || user.role === 'co-admin');
     const uploadForm = document.getElementById('product-update');
     if (uploadForm) {
         uploadForm.classList.toggle('hidden', !isAdmin);
+    }
+
+    const mobileAdminLink = document.getElementById('mobileAdminLink');
+    const desktopAdminLink = document.getElementById('desktopAdminLink');
+
+    if (mobileAdminLink) {
+        mobileAdminLink.classList.toggle('hidden', !isAdmin);
+    }
+    if (desktopAdminLink) {
+        desktopAdminLink.classList.toggle('hidden', !isAdmin);
     }
 };
 
@@ -139,6 +149,7 @@ window.saveUserToFirebase = function(user) {
             set(userRef, {
                 name: user.displayName || "নাম পাওয়া যায়নি",
                 email: user.email,
+                role: 'user', // Default role
                 createdAt: new Date().toISOString()
             });
         }
@@ -168,7 +179,8 @@ window.updateCartUI = function() {
     const cartItemsContainer = document.getElementById('cartItems');
     const totalPriceElement = document.getElementById('totalPrice');
     const cartCountElement = document.getElementById('cartCount');
-    if (!cartItemsContainer || !totalPriceElement || !cartCountElement) return;
+    const cartTotalProductsElement = document.getElementById('cartTotalProducts');
+    if (!cartItemsContainer || !totalPriceElement || !cartCountElement || !cartTotalProductsElement) return;
 
     cartItemsContainer.innerHTML = '';
     let totalPrice = 0;
@@ -183,9 +195,9 @@ window.updateCartUI = function() {
         cartItem.innerHTML = `
             <h3 class="text-lg font-bold text-gray-800 mb-3 truncate">${item.name || 'নাম পাওয়া যায়নি'}</h3>
             <div class="flex items-start space-x-3">
-                <img src="${item.image ? item.image.split(',')[0] : 'https://via.placeholder.com/50'}" class="w-16 h-16 object-cover rounded-lg flex-shrink-0" alt="${item.name}">
-                <div class="flex flex-col flex-grow justify-between">
-                    <div class="flex items-center justify-between mb-2">
+                <img src="${item.image ? item.image.split(',')[0] : 'https://via.placeholder.com/50'}" class="w-16 h-16 object-cover rounded-lg mr-3 flex-shrink-0" alt="${item.name}">
+                <div class="flex flex-col flex-grow">
+                    <div class="flex items-center justify-between w-full">
                         <div class="flex items-center space-x-2">
                             <button onclick="window.decreaseQuantity(${index})" class="bg-lipstick text-white w-6 h-6 rounded-full flex items-center justify-center">-</button>
                             <span class="px-2 font-bold text-lipstick">${item.quantity || 1}</span>
@@ -203,6 +215,7 @@ window.updateCartUI = function() {
     totalPriceElement.textContent = `মোট মূল্য: ${totalPrice} টাকা`;
     cartCountElement.textContent = totalQuantity;
     cartCountElement.classList.toggle('hidden', totalQuantity === 0);
+    cartTotalProductsElement.textContent = totalQuantity;
 };
 
 // কার্ট থেকে আইটেম রিমুভ করার ফাংশন
@@ -327,15 +340,17 @@ window.filterProducts = function(category) {
         filtered = products.filter(p => p.category && p.category.toLowerCase() === category.toLowerCase());
     }
     window.loadProducts(filtered);
-    window.closeSidebar(); // Close sidebar after filtering
 };
 
 // সাইডবার ক্যাটাগরি ক্লিক হ্যান্ডলার
-window.handleCategoryClick = function(category, event) {
+window.handleCategoryClick = function(category, event, isSubmenu) {
     if (event) {
-        event.stopPropagation(); // Prevent sidebar from closing immediately
+        event.stopPropagation();
     }
     window.filterProducts(category);
+    if (isSubmenu) {
+        window.closeSidebar();
+    }
 };
 
 // প্রোডাক্ট ডিটেইল পেজে রিডাইরেক্ট
@@ -445,6 +460,10 @@ window.openSidebar = function() {
     if (sidebar && sidebarOverlay) {
         sidebar.classList.remove('-translate-x-full');
         sidebarOverlay.classList.remove('hidden');
+        // Prevent clicks inside the sidebar from closing it
+        sidebar.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
     }
 };
 
@@ -475,6 +494,16 @@ window.closeCartSidebar = function() {
     }
 };
 
+// ডেস্কটপ সাবমেনু টগল ফাংশন
+window.toggleSubMenuDesktop = function() {
+    const desktopSubMenuBar = document.getElementById('desktopSubMenuBar');
+    const desktopArrowIcon = document.getElementById('desktopArrowIcon');
+    if (desktopSubMenuBar && desktopArrowIcon) {
+        desktopSubMenuBar.classList.toggle('hidden');
+        desktopArrowIcon.classList.toggle('rotate-180');
+    }
+};
+
 // প্রোডাক্ট ডিটেইল পেজ ইনিশিয়ালাইজেশন
 window.initializeProductDetailPage = async function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -500,6 +529,18 @@ window.initializeProductDetailPage = async function() {
             const mainImage = document.getElementById('mainImage');
             const thumbnailContainer = document.getElementById('thumbnailContainer');
             const imageUrls = product.image ? product.image.split(',').map(url => url.trim()) : [];
+            let currentImageIndex = 0;
+
+            function updateMainImage(index) {
+                if (imageUrls.length > 0) {
+                    mainImage.src = imageUrls[index];
+                    currentImageIndex = index;
+                    // Update active thumbnail
+                    Array.from(thumbnailContainer.children).forEach((img, i) => {
+                        img.classList.toggle('active', i === index);
+                    });
+                }
+            }
 
             if (imageUrls.length > 0) {
                 mainImage.src = imageUrls[0];
@@ -508,16 +549,89 @@ window.initializeProductDetailPage = async function() {
                     const thumbnail = document.createElement('img');
                     thumbnail.src = url;
                     thumbnail.className = `thumbnail ${index === 0 ? 'active' : ''}`;
-                    thumbnail.onclick = () => {
-                        mainImage.src = url;
-                        Array.from(thumbnailContainer.children).forEach(img => img.classList.remove('active'));
-                        thumbnail.classList.add('active');
-                    };
+                    thumbnail.onclick = () => updateMainImage(index);
                     thumbnailContainer.appendChild(thumbnail);
                 });
             } else {
                 mainImage.src = 'https://via.placeholder.com/500x400.png?text=No Image';
             }
+
+            // Full-screen modal logic
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const closeBtn = document.getElementById('modalCloseBtn');
+            const prevBtn = document.getElementById('modalPrevBtn');
+            const nextBtn = document.getElementById('modalNextBtn');
+
+            if(modal && modalImage && closeBtn && prevBtn && nextBtn) {
+                mainImage.onclick = () => {
+                    if(imageUrls.length > 0) {
+                        modal.style.display = "flex";
+                        modalImage.src = mainImage.src;
+                    }
+                };
+
+                closeBtn.onclick = () => {
+                    modal.style.display = "none";
+                };
+                
+                modal.onclick = (event) => {
+                    if (event.target === modal) {
+                        modal.style.display = "none";
+                    }
+                };
+                
+                function showNextImage() {
+                    currentImageIndex = (currentImageIndex + 1) % imageUrls.length;
+                    modalImage.src = imageUrls[currentImageIndex];
+                    mainImage.src = imageUrls[currentImageIndex];
+                    updateMainImage(currentImageIndex);
+                }
+
+                function showPrevImage() {
+                    currentImageIndex = (currentImageIndex - 1 + imageUrls.length) % imageUrls.length;
+                    modalImage.src = imageUrls[currentImageIndex];
+                    mainImage.src = imageUrls[currentImageIndex];
+                    updateMainImage(currentImageIndex);
+                }
+
+                nextBtn.onclick = showNextImage;
+                prevBtn.onclick = showPrevImage;
+            }
+
+            // Function to toggle order details visibility
+            window.toggleOrderDetails = function(element) {
+                const detailsDiv = element.nextElementSibling;
+                const icon = element.querySelector('i');
+                if (detailsDiv.classList.contains('hidden')) {
+                    detailsDiv.classList.remove('hidden');
+                    icon.classList.add('rotate-180');
+                } else {
+                    detailsDiv.classList.add('hidden');
+                    icon.classList.remove('rotate-180');
+                }
+            };
+
+
+            // Quantity Selector
+            const quantityInput = document.getElementById('quantityInput');
+            const decreaseQuantityBtn = document.getElementById('decreaseQuantityBtn');
+            const increaseQuantityBtn = document.getElementById('increaseQuantityBtn');
+
+            if(quantityInput && decreaseQuantityBtn && increaseQuantityBtn) {
+                decreaseQuantityBtn.addEventListener('click', () => {
+                    let currentValue = parseInt(quantityInput.value);
+                    if (currentValue > 1) {
+                        quantityInput.value = currentValue - 1;
+                    }
+                });
+
+                increaseQuantityBtn.addEventListener('click', () => {
+                    let currentValue = parseInt(quantityInput.value);
+                    quantityInput.value = currentValue + 1;
+                });
+            }
+
 
             // Enable buttons
             const buyNowBtn = document.getElementById('buyNowBtn');
@@ -531,18 +645,24 @@ window.initializeProductDetailPage = async function() {
             addToCartBtn.disabled = false;
 
             // WhatsApp Button
-            const whatsappMessage = encodeURIComponent(`আমি এই প্রোডাক্টটি কিনতে চাই:\nপ্রোডাক্টের নাম: ${product.name}\nদাম: ${product.price} টাকা\nলিঙ্ক: ${window.location.href}`);
+            const whatsappMessage = encodeURIComponent(`আমি এই প্রোডাক্টটি কিনতে চাই:
+প্রোডাক্টের নাম: ${product.name}
+দাম: ${product.price} টাকা
+লিঙ্ক: ${window.location.href}`);
             whatsappBtn.href = `https://wa.me/?text=${whatsappMessage}`;
 
             // Add to Cart from Detail Page
             window.addToCartFromDetail = function() {
-                window.addToCart(product, 1);
+                const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
+                window.addToCart(product, quantity);
             };
 
             // Buy Now from Detail Page
             window.buyNow = function() {
-                localStorage.setItem('buyNowProduct', JSON.stringify({ id: product.id, quantity: 1 }));
-                window.location.href = `order-form.html?source=buyNow&id=${product.id}&quantity=1`;
+                const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
+                const buyNowCart = [{ ...product, quantity: quantity }];
+                localStorage.setItem('checkoutCartItems', JSON.stringify(buyNowCart));
+                window.location.href = `order-form.html`;
             };
 
         } else {
@@ -553,30 +673,89 @@ window.initializeProductDetailPage = async function() {
         console.error("Error loading product details:", error);
         document.getElementById('productTitle').textContent = "প্রোডাক্ট লোড করতে সমস্যা হয়েছে।";
     }
+};""
+
+// Function to load HTML content into a placeholder
+window.loadHTML = async function(url, elementId) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const html = await response.text();
+        document.getElementById(elementId).innerHTML = html;
+    } catch (error) {
+        console.error(`Error loading ${url}:`, error);
+    }
 };
 
 // DOM লোড হওয়ার পরে সব শুরু করা
-document.addEventListener("DOMContentLoaded", async () => {
+        document.addEventListener("DOMContentLoaded", async () => {
+            setTimeout(() => {
+                window.closeSidebar(); // Close mobile sidebar on any page load
+            }, 100);
+
+            // Admin panel security check
+            if (window.location.pathname.includes('admin.html')) {
+                const adminEmail = "mdnahidislam6714@gmail.com";
+                onAuthStateChanged(auth, (user) => {
+                    if (!user || user.email !== adminEmail) {
+                        alert("Access Denied! You must be the admin to access this page.");
+                        window.location.href = 'index.html'; // Redirect to home page
+                    }
+                });
+            }
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // Load header and footer
+            window.loadHTML('header.html', 'header-placeholder');
+            window.loadHTML('footer.html', 'footer-placeholder');
+
+
+    const shareButton = document.getElementById('shareButton');
+    const socialIcons = document.getElementById('socialIcons');
+    const closeShareButton = document.getElementById('closeShareButton');
+
+    if (shareButton && socialIcons && closeShareButton) {
+        shareButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            socialIcons.classList.remove('hidden');
+            shareButton.classList.add('hidden');
+        });
+
+        closeShareButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            socialIcons.classList.add('hidden');
+            shareButton.classList.remove('hidden');
+        });
+    }
+
+    // Hide social icons if clicked outside
+    document.addEventListener('click', (event) => {
+        if (socialIcons && !socialIcons.classList.contains('hidden') && !socialIcons.contains(event.target) && !shareButton.contains(event.target)) {
+            socialIcons.classList.add('hidden');
+        }
+    });
+
     window.addEventListener("scroll", () => {
         const mobileSearchBar = document.getElementById('mobileSearchBar');
         if (mobileSearchBar && !mobileSearchBar.classList.contains('hidden')) {
             closeMobileSearch();
         }
     });
-    // Load header and footer
-    const headerDiv = document.getElementById("header");
-    const footerDiv = document.getElementById("footer");
-    if(headerDiv) {
-        fetch("header.html").then(res => res.text()).then(data => headerDiv.innerHTML = data).then(() => {
-             // Re-initialize event listeners for dynamically loaded header elements
-            document.getElementById('sidebarOverlay').addEventListener('click', window.closeSidebar);
-            document.getElementById('cartOverlay').addEventListener('click', window.closeCartSidebar);
-        });
-    }
-    if(footerDiv) {
-        fetch("footer.html").then(res => res.text()).then(data => footerDiv.innerHTML = data);
-    }
-
     // Load products if on the right page
     if (document.getElementById("productList")) {
         try {
@@ -607,7 +786,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (auth) {
         onAuthStateChanged(auth, (user) => {
             window.updateLoginButton(user);
-            window.checkAdminAndShowUploadForm(user);
+            if (user) {
+                // Fetch user role from Firebase and save to localStorage
+                const userRef = ref(database, `users/${user.uid}`);
+                get(userRef).then(snapshot => {
+                    const userData = snapshot.val();
+                    const userWithRole = { ...user, role: userData ? userData.role : 'user' };
+                    localStorage.setItem('loggedInUser', JSON.stringify(userWithRole));
+                    window.checkAdminAndShowUploadForm(userWithRole);
+                });
+            } else {
+                localStorage.removeItem('loggedInUser');
+                window.checkAdminAndShowUploadForm(null);
+            }
             window.loadCartFromFirebase();
             // If on order-form.html, initialize it after auth state is known
             if (document.getElementById('checkoutForm')) {
@@ -632,68 +823,144 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Initialize Order Track Page
     window.initializeOrderTrackPage = async function() {
+        console.log("Initializing Order Track Page...");
         const loadingIndicator = document.getElementById('loadingIndicator');
         const loginPrompt = document.getElementById('loginPrompt');
-        const orderTrackForm = document.getElementById('orderTrackForm');
         const orderTrackResult = document.getElementById('orderTrackResult');
         const noOrderFoundMessage = document.getElementById('noOrderFoundMessage');
+        const phoneNumberSearchInput = document.getElementById('phoneNumberSearch');
+        const searchByPhoneBtn = document.getElementById('searchByPhoneBtn');
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalContent = document.getElementById('modalContent');
 
         // Initially hide all dynamic sections
         loadingIndicator.classList.add('hidden');
         loginPrompt.classList.add('hidden');
-        orderTrackForm.classList.add('hidden'); // Keep this hidden as it's now empty
         orderTrackResult.classList.add('hidden');
         noOrderFoundMessage.classList.add('hidden');
+        orderDetailsModal.classList.add('hidden');
 
-        // Load orders from local storage
-        const savedOrderIds = JSON.parse(localStorage.getItem('userOrderIds')) || [];
-
-        if (savedOrderIds.length === 0) {
-            noOrderFoundMessage.textContent = "আপনার কোনো অর্ডার পাওয়া যায়নি।";
-            noOrderFoundMessage.classList.remove('hidden');
-            return;
-        }
-
-        loadingIndicator.classList.remove('hidden');
-        orderTrackResult.innerHTML = ''; // Clear previous results
-
-        try {
-            let foundOrders = 0;
-            for (const orderId of savedOrderIds) {
-                const orderRef = ref(database, `orders/${orderId}`);
-                const snapshot = await get(orderRef);
-
-                if (snapshot.exists()) {
-                    const order = snapshot.val();
-                    // Display order details
-                    orderTrackResult.innerHTML += `
-                        <div class="bg-white p-4 rounded-lg shadow-md mb-4">
-                            <h3 class="text-xl font-bold text-lipstick mb-3">অর্ডার আইডি: ${orderId}</h3>
-                            <p class="text-gray-700 mb-2"><strong>স্ট্যাটাস:</strong> <span class="font-semibold text-green-600">${order.status}</span></p>
-                            <p class="text-gray-700 mb-2"><strong>অর্ডার তারিখ:</strong> ${new Date(order.orderDate).toLocaleString('bn-BD')}</p>
-                            <p class="text-gray-700 mb-2"><strong>মোট প্রদেয়:</strong> ${order.totalAmount} টাকা</p>
-                            <p class="text-gray-700 mb-2"><strong>ডেলিভারি ঠিকানা:</strong> ${order.address}</p>
-                            <h4 class="font-semibold text-gray-800 mt-4 mb-2">অর্ডারকৃত পণ্যসমূহ:</h4>
-                            <ul class="list-disc list-inside">
-                                ${order.items.map(item => `<li>${item.name} (পরিমাণ: ${item.quantity}, মূল্য: ${item.price} টাকা)</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
-                    foundOrders++;
-                }
-            }
-
-            if (foundOrders > 0) {
-                orderTrackResult.classList.remove('hidden');
-            } else {
+        // Function to display orders
+        const displayOrders = (orders) => {
+            console.log("Displaying orders:", orders);
+            orderTrackResult.innerHTML = '';
+            if (orders.length === 0) {
                 noOrderFoundMessage.textContent = "আপনার কোনো অর্ডার পাওয়া যায়নি।";
                 noOrderFoundMessage.classList.remove('hidden');
+                orderTrackResult.classList.add('hidden');
+            } else {
+                noOrderFoundMessage.classList.add('hidden');
+                orderTrackResult.classList.remove('hidden');
+                orders.forEach(order => {
+                    const orderDiv = document.createElement('div');
+                    orderDiv.className = "bg-white p-4 rounded-lg shadow-md mb-4 cursor-pointer";
+                    orderDiv.innerHTML = `
+                        <h3 class="text-xl font-bold text-lipstick mb-2">${order.items[0] ? order.items[0].name : 'অর্ডার'}</h3>
+                        <p class="text-gray-700"><strong>স্ট্যাটাস:</strong> <span class="font-semibold text-green-600">${order.status}</span></p>
+                        <p class="text-gray-700"><strong>মোট প্রদেয়:</strong> ${order.totalAmount} টাকা</p>
+                    `;
+                    orderDiv.addEventListener('click', () => {
+                        console.log("Order summary clicked:", order.id);
+                        showOrderDetailsModal(order);
+                    });
+                    orderTrackResult.appendChild(orderDiv);
+                });
             }
-        } catch (error) {
-            console.error("অর্ডার ট্র্যাক করতে সমস্যা হয়েছে:", error);
-            window.showToast("অর্ডার ট্র্যাক করতে সমস্যা হয়েছে।", "error");
-        } finally {
-            loadingIndicator.classList.add('hidden');
+        };
+
+        // Function to show order details in modal
+        const showOrderDetailsModal = (order) => {
+            console.log("Showing modal for order:", order.id);
+            console.log("Modal element:", orderDetailsModal);
+            console.log("Modal content element:", modalContent);
+            modalContent.innerHTML = `
+                <p class="text-gray-700 mb-2"><strong>অর্ডার আইডি:</strong> ${order.id}</p>
+                <p class="text-gray-700 mb-2"><strong>স্ট্যাটাস:</strong> <span class="font-semibold text-green-600">${order.status}</span></p>
+                <p class="text-gray-700 mb-2"><strong>অর্ডার তারিখ:</strong> ${new Date(order.orderDate).toLocaleString('bn-BD')}</p>
+                <p class="text-gray-700 mb-2"><strong>মোট প্রদেয়:</strong> ${order.totalAmount} টাকা</p>
+                <p class="text-gray-700 mb-2"><strong>ডেলিভারি ঠিকানা:</strong> ${order.address}</p>
+                <h4 class="font-semibold text-gray-800 mt-4 mb-2">অর্ডারকৃত পণ্যসমূহ:</h4>
+                <ul class="list-disc list-inside">
+                    ${order.items.map(item => `<li>
+                        <a href="product-detail.html?id=${item.id}" class="flex items-center space-x-2 hover:text-blue-600">
+                            <img src="${item.image ? item.image.split(',')[0] : 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded-md" alt="${item.name}">
+                            <span>${item.name} (পরিমাণ: ${item.quantity}, মূল্য: ${item.price} টাকা)</span>
+                        </a>
+                    </li>`).join('')}
+                </ul>
+            `;
+            orderDetailsModal.classList.remove('hidden');
+            console.log("Modal should be visible now.");
+        };
+
+        // Close modal event
+        closeModalBtn.addEventListener('click', () => {
+            console.log("Closing modal...");
+            orderDetailsModal.classList.add('hidden');
+        });
+        orderDetailsModal.addEventListener('click', (event) => {
+            if (event.target === orderDetailsModal) {
+                console.log("Clicked outside modal, closing...");
+                orderDetailsModal.classList.add('hidden');
+            }
+        });
+
+        // Load orders from local storage (if any)
+        const loadOrdersFromLocalStorage = async () => {
+            console.log("Loading orders from local storage...");
+            try {
+                const savedOrderIds = JSON.parse(localStorage.getItem('userOrderIds')) || [];
+                const orders = [];
+                for (const orderId of savedOrderIds) {
+                    const orderRef = ref(database, `orders/${orderId}`);
+                    const snapshot = await get(orderRef);
+                    if (snapshot.exists()) {
+                        orders.push({ id: orderId, ...snapshot.val() });
+                    }
+                }
+                return orders;
+            } catch (error) {
+                console.error("Error loading orders from local storage:", error);
+                window.showToast("অর্ডার লোড করতে সমস্যা হয়েছে।", "error");
+                return []; // Return empty array on error
+            }
+        };
+
+        // Search orders by phone number
+        const searchOrdersByPhoneNumber = async (phoneNumber) => {
+            console.log("Searching orders by phone number:", phoneNumber);
+            try {
+                const ordersRef = ref(database, 'orders');
+                const snapshot = await get(ordersRef);
+                const allOrders = snapshot.exists() ? Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
+                const filteredOrders = allOrders.filter(order => order.phoneNumber === phoneNumber);
+                return filteredOrders;
+            } catch (error) {
+                console.error("ফোন নম্বর দিয়ে অর্ডার খুঁজতে সমস্যা হয়েছে:", error);
+                window.showToast("অর্ডার খুঁজতে সমস্যা হয়েছে।", "error");
+                return []; // Return empty array on error
+            }
+        };
+
+        // Event listener for phone number search button
+        if (searchByPhoneBtn) {
+            searchByPhoneBtn.addEventListener('click', searchOrdersByPhoneNumber);
+            console.log("Search by phone button event listener added.");
+        }
+
+        // Initial load based on login status or local storage
+        if (auth.currentUser) {
+            console.log("User is logged in, loading orders from local storage.");
+            loadOrdersFromLocalStorage();
+        } else {
+            console.log("User is not logged in, attempting to load orders from local storage.");
+            loadOrdersFromLocalStorage();
+            // If no orders in local storage, then show login prompt
+            if (JSON.parse(localStorage.getItem('userOrderIds'))?.length === 0) {
+                loginPrompt.classList.remove('hidden');
+                console.log("No orders in local storage, showing login prompt.");
+            }
         }
     };
 
@@ -725,7 +992,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // If coming from buyNow, and currentCartItems doesn't contain this product, add it.
-        // This ensures that if user refreshes or navigates back, the buyNow product is still there.
+        // This ensures that user refreshes or navigates back, the buyNow product is still there.
         const urlParams = new URLSearchParams(window.location.search);
         const source = urlParams.get('source');
         if (source === 'buyNow') {
@@ -773,6 +1040,23 @@ document.addEventListener("DOMContentLoaded", async () => {
                 totalProductCountDisplay.textContent = totalProductCount;
             }
 
+            // Toggle visibility of payment fields based on delivery location
+            const deliveryPaymentGroup = document.getElementById('deliveryPaymentGroup');
+            const paymentNotice = document.getElementById('paymentNotice');
+            const paymentNumberGroup = document.getElementById('paymentNumberGroup');
+            const transactionIdGroup = document.getElementById('transactionIdGroup');
+
+            if (selectedDeliveryLocation && selectedDeliveryLocation.value === 'outsideDhaka') {
+                deliveryPaymentGroup.classList.remove('hidden');
+                paymentNotice.classList.remove('hidden');
+                paymentNumberGroup.classList.remove('hidden');
+                transactionIdGroup.classList.remove('hidden');
+            } else {
+                deliveryPaymentGroup.classList.add('hidden');
+                paymentNotice.classList.add('hidden');
+                paymentNumberGroup.classList.add('hidden');
+                transactionIdGroup.classList.add('hidden');
+            }
 
             // Enable/disable submit button based on cart items
             if (currentCartItems.length === 0) {
@@ -784,7 +1068,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         };
 
-        
+        // Add event listeners to delivery location radios
+        deliveryLocationRadios.forEach(radio => {
+            radio.addEventListener('change', updatePriceSummary);
+        });
+
+        // Initial call to update price summary and payment fields visibility
+        updatePriceSummary();
 
         if (currentCartItems.length === 0) {
             checkoutItemsContainer.innerHTML = '<p class="text-center text-gray-500 italic p-4">আপনার কার্ট খালি।</p>';
@@ -855,48 +1145,443 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 };
 
-    // Product Form Submission Handling
-    const productForm = document.getElementById('productForm');
-    if (productForm) {
-        productForm.addEventListener('submit', async (event) => {
+    // Checkout Form Submission Handling
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const productName = document.getElementById('productName').value;
-            const productPrice = parseFloat(document.getElementById('productPrice').value);
-            const productCategory = document.getElementById('productCategory').value;
-            const productImages = Array.from(document.querySelectorAll('#imageInputs input')).map(input => input.value.trim()).filter(url => url !== '').join(',');
-            const productTags = document.getElementById('productTags').value;
-            const productDescription = document.getElementById('productDescription').value;
-            const productStockStatus = document.getElementById('productStockStatus').value;
-            const productQuantity = parseInt(document.getElementById('productQuantity').value);
+            const customerName = document.getElementById('customerName').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const address = document.getElementById('address').value;
+            const deliveryLocation = document.querySelector('input[name="deliveryLocation"]:checked').value;
+            const deliveryNote = document.getElementById('deliveryNote').value;
+            const productPaymentMethod = document.getElementById('productPaymentMethod').value;
 
-            if (!productName || isNaN(productPrice) || productPrice <= 0 || !productDescription) {
-                window.showToast("অনুগ্রহ করে সকল প্রয়োজনীয় ফিল্ড পূরণ করুন এবং সঠিক দাম দিন।", "error");
+            let deliveryPaymentMethod = '';
+            let paymentNumber = '';
+            let transactionId = '';
+
+            if (deliveryLocation === 'outsideDhaka') {
+                deliveryPaymentMethod = document.getElementById('deliveryPaymentMethod').value;
+                paymentNumber = document.getElementById('paymentNumber').value;
+                transactionId = document.getElementById('transactionId').value;
+
+                if (!deliveryPaymentMethod || !paymentNumber || !transactionId) {
+                    window.showToast("ঢাকার বাইরের অর্ডারের জন্য ডেলিভারি চার্জ পেমেন্টের তথ্য পূরণ করুন।", "error");
+                    return;
+                }
+            }
+
+            if (!customerName || !phoneNumber || !address) {
+                window.showToast("অনুগ্রহ করে সকল প্রয়োজনীয় ফিল্ড পূরণ করুন।", "error");
                 return;
             }
 
-            const productData = {
-                name: productName,
-                price: productPrice,
-                category: productCategory,
-                image: productImages,
-                tags: productTags,
-                description: productDescription,
-                stockStatus: productStockStatus,
-                quantity: productQuantity,
-                createdAt: new Date().toISOString()
+            const orderData = {
+                customerName,
+                phoneNumber,
+                address,
+                deliveryLocation,
+                deliveryNote,
+                items: currentCartItems, // Assuming currentCartItems is globally available and updated
+                totalAmount: parseFloat(document.getElementById('totalAmountDisplay').textContent.replace(' টাকা', '')),
+                subTotal: parseFloat(document.getElementById('subTotalDisplay').textContent.replace(' টাকা', '')),
+                deliveryFee: parseFloat(document.getElementById('deliveryFeeDisplay').textContent.replace(' টাকা', '')),
+                productPaymentMethod,
+                deliveryPaymentMethod: deliveryPaymentMethod || 'N/A',
+                paymentNumber: paymentNumber || 'N/A',
+                transactionId: transactionId || 'N/A',
+                orderDate: new Date().toISOString(),
+                status: 'Pending'
             };
 
             try {
-                const newProductRef = push(ref(database, 'products'), productData);
-                window.showToast("প্রোডাক্ট সফলভাবে পোস্ট করা হয়েছে!", "success");
-                productForm.reset(); // Reset the form
-                document.getElementById('imageInputs').innerHTML = '<input type="text" class="w-full p-2 border rounded mb-2" placeholder="ছবির লিংক">'; // Reset image inputs
-                window.loadProductsFromFirebase().then(window.loadProducts); // Reload products on page
+                const newOrderRef = push(ref(database, 'orders'), orderData);
+                const orderId = newOrderRef.key;
+
+                // Save orderId to local storage for tracking
+                let userOrderIds = JSON.parse(localStorage.getItem('userOrderIds')) || [];
+                userOrderIds.push(orderId);
+                localStorage.setItem('userOrderIds', JSON.stringify(userOrderIds));
+
+                window.showToast("আপনার অর্ডার সফলভাবে কনফার্ম হয়েছে!", "success");
+                checkoutForm.reset(); // Reset the form
+                localStorage.removeItem('checkoutCartItems'); // Clear cart items after order
+                currentCartItems = []; // Clear current cart items
+                window.updateCartUI(); // Update cart UI
+
+                // Show the order list link
+                const orderListLink = document.getElementById('orderListLink');
+                if (orderListLink) {
+                    orderListLink.classList.remove('hidden');
+                }
+
             } catch (error) {
-                console.error("প্রোডাক্ট পোস্ট করতে সমস্যা হয়েছে:", error);
-                window.showToast("প্রোডাক্ট পোস্ট করতে সমস্যা হয়েছে।", "error");
+                console.error("অর্ডার কনফার্ম করতে সমস্যা হয়েছে:", error);
+                window.showToast("অর্ডার কনফার্ম করতে সমস্যা হয়েছে।", "error");
             }
         });
     }
 });
+
+// Dashboard Overview Functions
+window.loadDashboardOverview = async function() {
+    const totalProductsElement = document.querySelector('#dashboard-overview .text-lipstick');
+    const pendingOrdersElement = document.querySelector('#dashboard-overview .text-yellow-500');
+    const totalUsersElement = document.querySelector('#dashboard-overview .text-blue-500');
+
+    if (!totalProductsElement || !pendingOrdersElement || !totalUsersElement) return;
+
+    try {
+        // Fetch total products
+        const productsRef = ref(database, 'products');
+        const productsSnapshot = await get(productsRef);
+        const totalProducts = productsSnapshot.exists() ? Object.keys(productsSnapshot.val()).length : 0;
+        totalProductsElement.textContent = totalProducts;
+
+        // Fetch pending orders
+        const ordersRef = ref(database, 'orders');
+        const ordersSnapshot = await get(ordersRef);
+        let pendingOrders = 0;
+        if (ordersSnapshot.exists()) {
+            Object.values(ordersSnapshot.val()).forEach(order => {
+                if (order.status === 'Pending') {
+                    pendingOrders++;
+                }
+            });
+        }
+        pendingOrdersElement.textContent = pendingOrders;
+
+        // Fetch total users
+        const usersRef = ref(database, 'users');
+        const usersSnapshot = await get(usersRef);
+        const totalUsers = usersSnapshot.exists() ? Object.keys(usersSnapshot.val()).length : 0;
+        totalUsersElement.textContent = totalUsers;
+
+    } catch (error) {
+        console.error("Error loading dashboard overview:", error);
+        window.showToast('Failed to load dashboard data.', 'error');
+    }
+};
+
+window.promoteToCoAdmin = async function(uid) {
+    if (!confirm('Are you sure you want to promote this user to Co-Admin?')) return;
+    try {
+        const userRef = ref(database, `users/${uid}`);
+        await set(userRef, { ... (await get(userRef)).val(), role: 'co-admin' });
+        window.showToast('User promoted to Co-Admin successfully!');
+        window.loadUsersForAdmin(); // Reload user list
+    } catch (error) {
+        console.error("Error promoting user:", error);
+        window.showToast('Failed to promote user.', 'error');
+    }
+};
+
+window.demoteFromCoAdmin = async function(uid) {
+    if (!confirm('Are you sure you want to demote this user?')) return;
+    try {
+        const userRef = ref(database, `users/${uid}`);
+        await set(userRef, { ... (await get(userRef)).val(), role: 'user' });
+        window.showToast('User demoted successfully!');
+        window.loadUsersForAdmin(); // Reload user list
+    } catch (error) {
+        console.error("Error demoting user:", error);
+        window.showToast('Failed to demote user.', 'error');
+    }
+};
+
+// Product Management Functions
+window.loadProductsForAdmin = async function() {
+    const productListDiv = document.getElementById('product-list-admin');
+    if (!productListDiv) return;
+
+    productListDiv.innerHTML = '<p>Loading products...</p>';
+
+    try {
+        const productsRef = ref(database, 'products');
+        const snapshot = await get(productsRef);
+
+        if (snapshot.exists()) {
+            const products = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
+            productListDiv.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow-md">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Image</th>
+                                <th class="py-3 px-6 text-left">Name</th>
+                                <th class="py-3 px-6 text-left">Price</th>
+                                <th class="py-3 px-6 text-left">Description</th>
+                                <th class="py-3 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
+                            ${products.map(product => `
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6 text-left whitespace-nowrap">
+                                        <img src="${product.image ? product.image.split(',')[0] : 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded-md" alt="${product.name}">
+                                    </td>
+                                    <td class="py-3 px-6 text-left">${product.name}</td>
+                                    <td class="py-3 px-6 text-left">৳ ${product.price}</td>
+                                    <td class="py-3 px-6 text-left truncate max-w-xs">${product.description}</td>
+                                    <td class="py-3 px-6 text-center">
+                                        <button onclick="window.editProduct('${product.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-600 mr-2">Edit</button>
+                                        <button onclick="window.deleteProduct('${product.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            productListDiv.innerHTML = '<p>No products found.</p>';
+        }
+    } catch (error) {
+        console.error("Error loading products for admin:", error);
+        productListDiv.innerHTML = '<p class="text-red-500">Error loading products.</p>';
+    }
+};
+
+window.editProduct = async function(productId) {
+    const productEditModal = document.getElementById('productEditModal');
+    const editProductId = document.getElementById('edit-product-id');
+    const editProductName = document.getElementById('edit-product-name');
+    const editProductDescription = document.getElementById('edit-product-description');
+    const editProductPrice = document.getElementById('edit-product-price');
+    const editProductImage = document.getElementById('edit-product-image');
+
+    try {
+        const productRef = ref(database, `products/${productId}`);
+        const snapshot = await get(productRef);
+
+        if (snapshot.exists()) {
+            const product = snapshot.val();
+            editProductId.value = productId;
+            editProductName.value = product.name;
+            editProductDescription.value = product.description;
+            editProductPrice.value = product.price;
+            editProductImage.value = product.image;
+            productEditModal.classList.remove('hidden');
+        } else {
+            window.showToast('Product not found.', 'error');
+        }
+    } catch (error) {
+        console.error("Error loading product for edit:", error);
+        window.showToast('Failed to load product for edit.', 'error');
+    }
+};
+
+window.closeProductEditModal = function() {
+    document.getElementById('productEditModal').classList.add('hidden');
+};
+
+window.updateProduct = async function(event) {
+    event.preventDefault();
+
+    const productId = document.getElementById('edit-product-id').value;
+    const productName = document.getElementById('edit-product-name').value;
+    const productDescription = document.getElementById('edit-product-description').value;
+    const productPrice = parseFloat(document.getElementById('edit-product-price').value);
+    const productImage = document.getElementById('edit-product-image').value;
+
+    if (!productName || !productDescription || isNaN(productPrice) || productPrice <= 0 || !productImage) {
+        window.showToast("Please fill in all product details correctly.", "error");
+        return;
+    }
+
+    const productData = {
+        name: productName,
+        description: productDescription,
+        price: productPrice,
+        image: productImage
+    };
+
+    try {
+        const productRef = ref(database, `products/${productId}`);
+        await update(productRef, productData);
+        window.showToast('Product updated successfully!');
+        window.closeProductEditModal();
+        window.loadProductsForAdmin(); // Reload product list after update
+    } catch (error) {
+        console.error("Error updating product:", error);
+        window.showToast('Failed to update product.', 'error');
+    }
+};
+
+window.deleteProduct = async function(productId) {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    try {
+        const productRef = ref(database, `products/${productId}`);
+        await set(productRef, null); // Set to null to delete
+        window.showToast('Product deleted successfully!');
+        window.loadProductsForAdmin(); // Reload product list
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        window.showToast('Failed to delete product.', 'error');
+    }
+};
+
+window.handleProductUpload = async function(event) {
+    event.preventDefault();
+
+    const productName = document.getElementById('product-name').value;
+    const productDescription = document.getElementById('product-description').value;
+    const productPrice = parseFloat(document.getElementById('product-price').value);
+    const productImage = document.getElementById('product-image').value;
+
+    if (!productName || !productDescription || isNaN(productPrice) || productPrice <= 0 || !productImage) {
+        window.showToast("Please fill in all product details correctly.", "error");
+        return;
+    }
+
+    const productData = {
+        name: productName,
+        description: productDescription,
+        price: productPrice,
+        image: productImage,
+        createdAt: new Date().toISOString()
+    };
+
+    try {
+        await push(ref(database, 'products'), productData);
+        window.showToast('Product uploaded successfully!');
+        document.getElementById('product-upload-form').reset(); // Clear the form
+        window.loadProductsForAdmin(); // Reload product list after upload
+    } catch (error) {
+        console.error("Error uploading product:", error);
+        window.showToast('Failed to upload product.', 'error');
+    }
+};
+
+window.loadAllOrdersForAdmin = async function() {
+    const orderListContainer = document.getElementById('order-list-admin');
+    if (!orderListContainer) return;
+
+    orderListContainer.innerHTML = '<p>Loading orders...</p>';
+
+    try {
+        const ordersRef = ref(database, 'orders');
+        const snapshot = await get(ordersRef);
+
+        if (snapshot.exists()) {
+            const orders = snapshot.val();
+            orderListContainer.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow-md">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Order ID</th>
+                                <th class="py-3 px-6 text-left">Customer</th>
+                                <th class="py-3 px-6 text-left">Phone</th>
+                                <th class="py-3 px-6 text-left">Total</th>
+                                <th class="py-3 px-6 text-left">Date</th>
+                                <th class="py-3 px-6 text-left">Status</th>
+                                <th class="py-3 px-6 text-center">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
+                            ${Object.entries(orders).map(([orderId, order]) => `
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6 text-left">${orderId}</td>
+                                    <td class="py-3 px-6 text-left">${order.customerName}</td>
+                                    <td class="py-3 px-6 text-left">${order.phoneNumber}</td>
+                                    <td class="py-3 px-6 text-left">৳ ${order.totalAmount}</td>
+                                    <td class="py-3 px-6 text-left">${new Date(order.orderDate).toLocaleDateString('bn-BD')}</td>
+                                    <td class="py-3 px-6 text-left">
+                                        <select id="status-${orderId}" onchange="window.updateOrderStatus('${orderId}', this.value)" class="p-2 border rounded-md">
+                                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                            <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                                            <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                            <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                        </select>
+                                    </td>
+                                    <td class="py-3 px-6 text-center">
+                                        <button onclick="window.showOrderDetailsModalAdmin('${orderId}')" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">View</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            orderListContainer.innerHTML = '<p>No orders found.</p>';
+        }
+    } catch (error) {
+        console.error("Error loading orders for admin:", error);
+        orderListContainer.innerHTML = '<p class="text-red-500">Error loading orders.</p>';
+    }
+};
+
+window.showOrderDetailsModalAdmin = async function(orderId) {
+    const orderDetailsModal = document.getElementById('orderDetailsModalAdmin');
+    const modalContent = document.getElementById('orderDetailsModalAdminContent');
+    if (!orderDetailsModal || !modalContent) return;
+
+    try {
+        const orderRef = ref(database, `orders/${orderId}`);
+        const snapshot = await get(orderRef);
+
+        if (snapshot.exists()) {
+            const order = snapshot.val();
+            modalContent.innerHTML = `
+                <h3 class="text-xl font-bold mb-4">Order Details (ID: ${orderId})</h3>
+                <p><strong>Customer Name:</strong> ${order.customerName}</p>
+                <p><strong>Phone Number:</strong> ${order.phoneNumber}</p>
+                <p><strong>Address:</strong> ${order.address}</p>
+                <p><strong>Delivery Location:</strong> ${order.deliveryLocation}</p>
+                <p><strong>Delivery Note:</strong> ${order.deliveryNote || 'N/A'}</p>
+                <p><strong>Product Payment Method:</strong> ${order.productPaymentMethod}</p>
+                <p><strong>Delivery Payment Method:</strong> ${order.deliveryPaymentMethod}</p>
+                <p><strong>Payment Number:</strong> ${order.paymentNumber}</p>
+                <p><strong>Transaction ID:</strong> ${order.transactionId}</p>
+                <p><strong>Sub Total:</strong> ৳ ${order.subTotal}</p>
+                <p><strong>Delivery Fee:</strong> ৳ ${order.deliveryFee}</p>
+                <p><strong>Total Amount:</strong> ৳ ${order.totalAmount}</p>
+                <p><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleString('bn-BD')}</p>
+                <p><strong>Status:</strong> ${order.status}</p>
+                <h4 class="font-semibold mt-4 mb-2">Items:</h4>
+                <ul class="list-disc list-inside">
+                    ${order.items.map(item => `<li>${item.name} (Qty: ${item.quantity}, Price: ৳ ${item.price})</li>`).join('')}
+                </ul>
+            `;
+            orderDetailsModal.classList.remove('hidden');
+        } else {
+            window.showToast('Order not found.', 'error');
+        }
+    } catch (error) {
+        console.error("Error loading order details:", error);
+        window.showToast('Failed to load order details.', 'error');
+    }
+};
+
+window.updateOrderStatus = async function(orderId, newStatus) {
+    if (!confirm(`Are you sure you want to change status of Order ${orderId} to ${newStatus}?`)) return;
+    try {
+        const orderRef = ref(database, `orders/${orderId}`);
+        await update(orderRef, { status: newStatus }); // Use update instead of set
+        window.showToast('Order status updated successfully!');
+        // No need to reload all orders, as Firebase's onValue listener will update if used
+        // For now, we'll just show toast. If onValue is not used, then reloadAllOrdersForAdmin()
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        window.showToast('Failed to update order status.', 'error');
+    }
+};
+
+window.updateOrderStatus = async function(orderId, newStatus) {
+    if (!confirm(`Are you sure you want to change status of Order ${orderId} to ${newStatus}?`)) return;
+    try {
+        const orderRef = ref(database, `orders/${orderId}`);
+        await set(orderRef, { ... (await get(orderRef)).val(), status: newStatus });
+        window.showToast('Order status updated successfully!');
+        // No need to reload all orders, as Firebase's onValue listener will update if used
+        // For now, we'll just show toast. If onValue is not used, then reloadAllOrdersForAdmin()
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        window.showToast('Failed to update order status.', 'error');
+    }
+};

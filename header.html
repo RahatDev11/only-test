@@ -1,17 +1,17 @@
 <!-- হেডার -->
-<header class="bg-brushstroke text-white p-4 flex justify-between items-center fixed top-0 left-0 w-full z-50">
+<header class="bg-brushstroke text-white p-2 md:p-4 flex justify-between items-center fixed top-0 left-0 w-full z-50">
     <!-- লোগো -->
     <a class="flex items-center" href="index.html">
         <div class="flex items-center">
             <img alt="Any's Beauty Corner লোগো" class="h-10 w-10 rounded-full mr-2 border-2 border-lipstick" height="40" src="img.jpg" width="40" onerror="this.src='https://via.placeholder.com/40'; this.alt='লোগো লোড হয়নি';">
-            <span class="text-lg font-bold">Any's Beauty Corner</span>
+            <span class="text-base font-bold md:text-lg">Any's Beauty Corner</span>
         </div>
     </a>
 
     <!-- ডানপাশের আইকনগুলো -->
     <div class="flex items-center space-x-4">
         <!-- ডেস্কটপ সার্চ বার -->
-        <div class="hidden md:block p-2 w-80 relative">
+        <div class="hidden md:block p-2 w-48 md:w-64 lg:w-80 relative">
             <div class="relative">
                 <input class="w-full p-2 pl-10 border-0 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-lipstick bg-white/50 backdrop-blur-sm placeholder:text-gray-400/80" id="searchInputDesktop" oninput="searchProductsDesktop()" placeholder="প্রোডাক্ট সার্চ করুন..." type="text" />
                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400/80"></i>
@@ -21,7 +21,7 @@
         </div>
 
         <!-- মোবাইল সার্চ আইকন -->
-        <div class="md:hidden cursor-pointer" onclick="focusMobileSearch()">
+        <div class="block md:hidden cursor-pointer" onclick="focusMobileSearch()">
             <i class="fas fa-search text-white text-xl"></i>
         </div>
 
@@ -43,7 +43,7 @@
                 <i class="fas fa-times"></i>
             </button>
             <!-- কার্ট হেডিং -->
-            <h2 class="text-xl text-black font-bold mb-4">কার্ট</h2>
+            <h2 class="text-xl text-black font-bold mb-4">কার্ট (<span id="cartTotalProducts">0</span>)</h2>
             <!-- কার্ট আইটেমগুলি -->
             <div id="cartItems" class="space-y-4 flex-1 overflow-y-auto"></div>
             <!-- চেকআউট বাটন -->
@@ -82,12 +82,12 @@
                         <i class="fas fa-chevron-down ml-2 transition-transform duration-300"></i>
                     </button>
                     <div class="hidden pl-4 py-2 space-y-1 bg-gray-100/50" id="category-list">
-                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#all" onclick="handleCategoryClick('all', event)">সকল প্রোডাক্ট</a>
-                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#health" onclick="handleCategoryClick('health', event)">স্বাস্থ্য</a>
-                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#cosmetics" onclick="handleCategoryClick('cosmetics', event)">মেকআপ</a>
-                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#skincare" onclick="handleCategoryClick('skincare', event)">স্কিনকেয়ার</a>
-                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#haircare" onclick="handleCategoryClick('haircare', event)">হেয়ারকেয়ার</a>
-                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#mehandi" onclick="handleCategoryClick('mehandi', event)">মেহেদী</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#all" onclick="handleCategoryClick('all', event, true)">সকল প্রোডাক্ট</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#health" onclick="handleCategoryClick('health', event, true)">স্বাস্থ্য</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#cosmetics" onclick="handleCategoryClick('cosmetics', event, true)">মেকআপ</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#skincare" onclick="handleCategoryClick('skincare', event, true)">স্কিনকেয়ার</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#haircare" onclick="handleCategoryClick('haircare', event, true)">হেয়ারকেয়ার</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="#mehandi" onclick="handleCategoryClick('mehandi', event, true)">মেহেদী</a>
                     </div>
                 </div>
 
@@ -104,27 +104,33 @@
                                 <span>লগইন</span>
                             </a>
                         </div>
-                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="index.html#home" onclick="handleCategoryClick('all', event)">হোম</a>
-                <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="index.html#about" onclick="event.stopPropagation();">আমাদের সম্পর্কে</a>
+                        <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="index.html#home" onclick="event.preventDefault(); window.location.hash='home'; window.closeSidebar();">হোম</a>
+                <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="index.html#about" onclick="event.preventDefault(); window.location.hash='about'; window.closeSidebar();">আমাদের সম্পর্কে</a>
                 <a id="mobileOrderTrackButton" class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="order-track.html" onclick="event.stopPropagation();">অর্ডার ট্র্যাক</a>
+                <div id="mobileAdminLink">
+                    <a class="block p-2 text-sm text-gray-700 hover:bg-gray-200 rounded" href="admin.html">
+                        <i class="fas fa-user-shield mr-2"></i>
+                        <span>অ্যাডমিন প্যানেল</span>
+                    </a>
+                </div>
                     </div>
                 </div>
             </div>
         </div>
         <!-- Blank area to click to close -->
-        <div class="fixed top-0 right-0 h-full w-[calc(100%-20rem)]" id="blankArea" onclick="closeSidebar()"></div>
+        <div class="fixed top-0 right-0 h-full w-[calc(100%-20rem)]" id="blankArea"></div>
     </div>
 
     <!-- ডেস্কটপ মেনু -->
-    <nav class="hidden md:flex space-x-4 items-center mr-20">
+    <nav class="hidden md:flex space-x-2 md:space-x-4 items-center mr-20">
         <div id="desktopLoginButton">
             <button class="flex items-center" onclick="openLoginModal()">
                 <i class="fas fa-sign-in-alt mr-2"></i>
                 <span>লগইন</span>
             </button>
         </div>
-        <a class="text-gray-800 hover:text-highlight" href="index.html#home">হোম</a>
-        <a class="text-gray-800 hover:text-highlight" href="index.html#about">আমাদের সম্পর্কে</a>
+        <a class="text-gray-800 hover:text-highlight" href="index.html#home" onclick="event.preventDefault(); window.location.hash='home';">হোম</a>
+        <a class="text-gray-800 hover:text-highlight" href="index.html#about" onclick="event.preventDefault(); window.location.hash='about';">আমাদের সম্পর্কে</a>
         <div class="relative">
             <button class="text-gray-800 hover:text-highlight" onclick="toggleSubMenuDesktop()">
                 পণ্য সমূহ
@@ -132,6 +138,12 @@
             </button>
         </div>
         <a id="desktopOrderTrackButton" class="text-gray-800 hover:text-highlight" href="order-track.html" onclick="handleOrderTrackClick(event)">অর্ডার ট্র্যাক</a>
+        <div id="desktopAdminLink">
+            <a class="text-gray-800 hover:text-highlight" href="admin.html">
+                <i class="fas fa-user-shield mr-2"></i>
+                <span>অ্যাডমিন প্যানেল</span>
+            </a>
+        </div>
     </nav>
 
     <!-- ডেস্কটপ টপ বার (সাবমেনু) -->

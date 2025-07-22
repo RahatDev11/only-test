@@ -1,58 +1,40 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>অর্ডার লিস্ট - Any's Beauty Corner</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Order List - Admin</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 </head>
-<body class="bg-background">
-    <div id="header"></div>
+<body>
+        <div id="header-placeholder"></div>
 
-    <!-- Mobile Search Bar -->
-    <div class="md:hidden p-2 w-full fixed top-20 left-0 z-40 hidden bg-transparent" id="mobileSearchBar">
-        <div class="relative">
-            <input type="text" id="searchInput" 
-                   class="w-full p-2 pl-10 pr-10 border-0 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-lipstick bg-white/50 backdrop-blur-sm placeholder:text-gray-400/80" 
-                   placeholder="প্রোডাক্ট সার্চ করুন..." 
-                   oninput="searchProducts()">
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400/80"></i>
-            <i class="fas fa-times absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400/80 cursor-pointer" onclick="closeMobileSearch()"></i>
-        </div>
-        <div id="searchResults" class="mt-2 max-h-60 overflow-y-auto absolute bg-white/50 backdrop-blur-sm w-full shadow-lg rounded-lg z-50"></div>
-    </div>
-
-    <main class="p-4 pt-24 md:pt-28">
-        <div class="bg-white/60 backdrop-blur-md border border-white/40 rounded-lg shadow-xl p-4 md:p-6 max-w-4xl mx-auto">
-            <h2 class="text-2xl font-bold text-center mb-6 text-lipstick">আপনার অর্ডারসমূহ</h2>
-
-            <div id="loadingIndicator" class="text-center p-6 text-gray-600 flex flex-col items-center">
-                <i class="fas fa-spinner fa-spin fa-2x mb-3 text-lipstick"></i>
-                <span>অর্ডার লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</span>
-            </div>
-
-            <div id="loginPrompt" class="text-center p-6 text-red-600 hidden">
-                <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
-                <p>আপনার অর্ডার দেখতে অনুগ্রহ করে লগইন করুন।</p>
-                <button onclick="openLoginModal()" class="mt-4 bg-lipstick text-white px-4 py-2 rounded hover:bg-lipstick-dark">লগইন করুন</button>
-            </div>
-
-            <div id="ordersContainer" class="space-y-4 hidden">
-                <!-- Orders will be loaded here -->
-            </div>
-
-            <div id="noOrdersMessage" class="text-center p-6 text-gray-600 hidden">
-                <p>আপনার কোনো অর্ডার পাওয়া যায়নি।</p>
-                <a href="index.html" class="mt-4 inline-block bg-lipstick text-white px-4 py-2 rounded hover:bg-lipstick-dark">কেনাকাটা শুরু করুন</a>
-            </div>
+    <main class="container">
+        <h1>All Orders</h1>
+        <div id="order-list-container">
+            <!-- Orders will be loaded here -->
+            <p>Loading orders...</p>
         </div>
     </main>
 
-    <div id="footer"></div>
+        <div id="footer-placeholder"></div>
 
-    <script src="script.js" type="module"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load header and footer
+            fetch("header.html").then(res => res.text()).then(data => document.getElementById("header-placeholder").innerHTML = data);
+            fetch("footer.html").then(res => res.text()).then(data => document.getElementById("footer-placeholder").innerHTML = data);
+
+            // Check if user is admin or co-admin, otherwise redirect
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'co-admin')) {
+                window.location.href = 'index.html';
+                alert('You are not authorized to view this page.');
+                return;
+            }
+            window.loadAllOrdersForAdmin();
+        });
+    </script>
 </body>
 </html>

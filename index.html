@@ -34,7 +34,7 @@
 
 </head>
 <body>
-    <div id="header"></div>
+    <div id="header-placeholder"></div>
 
     <!-- মোবাইল সার্চ বার -->
     <div class="md:hidden p-2 w-full fixed top-20 left-0 z-40 hidden bg-transparent" id="mobileSearchBar">
@@ -51,7 +51,7 @@
     </div>
 
     <!-- মূল কন্টেন্ট -->
-    <main class="p-4 pt-20">
+    <main class="p-4 pt-16 md:pt-28">
         <!-- হোম সেকশন -->
         <section id="home" class="bg-white/20 backdrop-blur-md border border-white/30 rounded-lg shadow-lg text-center p-6 mb-6">
             <div class="glass-effect">
@@ -64,7 +64,7 @@
         <!-- পণ্য সমূহ -->
         <section id="products" class="mb-6">
             <h2 class="text-xl font-bold text-center mb-4 text-lipstick">পণ্য সমূহ</h2>
-            <div id="productList" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <!-- লোডিং স্পিনার এখানে দেখাবে -->
             </div>
         </section>
@@ -88,60 +88,7 @@
             </div>
         </section>
 
-        <!-- এডমিন সেকশন -->
-        <section id="product-update" class="hidden">
-            <h2 class="text-xl font-bold text-center mb-4 text-lipstick">প্রোডাক্ট আপডেট</h2>
-            <form id="productForm" class="bg-white p-6 rounded-lg shadow-lg">
-                <div class="mb-4">
-                    <label for="productName" class="block text-gray-700">পণ্যের নাম</label>
-                    <input type="text" id="productName" class="w-full p-2 border rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label for="productPrice" class="block text-gray-700">দাম</label>
-                    <input type="number" id="productPrice" class="w-full p-2 border rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label for="productCategory" class="block text-gray-700">ক্যাটাগরি</label>
-                    <select id="productCategory" class="w-full p-2 border rounded">
-                        <option value="health">স্বাস্থ্য</option>
-                        <option value="cosmetics">মেকআপ</option>
-                        <option value="skincare">স্কিনকেয়ার</option>
-                        <option value="haircare">হেয়ারকেয়ার</option>
-                        <option value="mehandi">মেহেদী</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="productImages" class="block text-gray-700">ছবি URL (কমা দিয়ে আলাদা করুন)</label>
-                    <div id="imageInputs">
-                        <input type="text" class="w-full p-2 border rounded mb-2" placeholder="ছবির লিংক">
-                    </div>
-                    <button type="button" onclick="addImageField()" class="bg-lipstick text-white px-3 py-1 rounded mt-2 hover:bg-lipstick-dark">
-                        <i class="fas fa-plus"></i> আরেকটি ছবি যোগ করুন
-                    </button>
-                </div>
-                <div class="mb-4">
-                    <label for="productTags" class="block text-gray-700">ট্যাগ (কমা দিয়ে আলাদা করুন)</label>
-                    <input type="text" id="productTags" class="w-full p-2 border rounded">
-                </div>
-                <div class="mb-4">
-                    <label for="productDescription" class="block text-gray-700">বিবরণ</label>
-                    <textarea id="productDescription" class="w-full p-2 border rounded" rows="4" required></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="productStockStatus" class="block text-gray-700">স্টক স্ট্যাটাস</label>
-                    <select id="productStockStatus" class="w-full p-2 border rounded">
-                        <option value="in_stock">স্টকে আছে</option>
-                        <option value="out_of_stock">স্টকে নেই</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="productQuantity" class="block text-gray-700">পরিমাণ</label>
-                    <select id="productQuantity" class="w-full p-2 border rounded"></select>
-                </div>
-                <button type="submit" class="bg-lipstick text-white px-4 py-2 rounded hover:bg-lipstick-dark">পোস্ট করুন</button>
-            </form>
-        </section>
-    </main>
+        </main>
 
     <!-- সোশ্যাল মিডিয়া ফ্লোটিং বাটন -->
     <div class="fixed bottom-4 right-4 z-50">
@@ -163,10 +110,13 @@
             <a href="https://youtube.com/@anysbeautycorner?si=oXGtEuakP_SIPH_Q" target="_blank" rel="noopener noreferrer" class="bg-lipstick text-white w-10 h-10 rounded-full flex items-center justify-center">
                 <i class="fab fa-youtube"></i>
             </a>
+            <button id="closeShareButton" class="bg-gray-500 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center mt-2">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 
-    <div id="footer"></div>
+    <div id="footer-placeholder"></div>
 
     <!-- লগইন মোডাল -->
     <div id="loginModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm">
